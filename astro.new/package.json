@@ -1,0 +1,46 @@
+{
+  "name": "astro.new",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@8.12.0",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "format": "run-s format:*",
+    "format:prettier": "prettier --write .",
+    "format:biome": "biome check . --apply",
+    "lint": "astro sync && run-s --continue-on-error lint:*",
+    "lint:biome": "biome lint .",
+    "lint:types": "tsc -b",
+    "lint:astro": "astro check"
+  },
+  "prettier": "@astrojs/site-kit/prettier",
+  "dependencies": {
+    "@astrojs/check": "^0.3.2",
+    "@astrojs/vercel": "^6.0.2",
+    "@fontsource-variable/inter": "^5.0.16",
+    "title": "^3.5.3"
+  },
+  "devDependencies": {
+    "@astrojs/site-kit": "github:withastro/site-kit",
+    "@astrojs/tailwind": "^5.0.3",
+    "@biomejs/biome": "^1.4.1",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@types/node": "^20.10.4",
+    "@types/title": "^3.4.3",
+    "astro": "^4.0.4",
+    "astro-icon": "^0.8.2",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.1.1",
+    "prettier-plugin-astro": "^0.12.2",
+    "prettier-plugin-tailwindcss": "^0.5.9",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3"
+  },
+  "license": "MIT"
+}

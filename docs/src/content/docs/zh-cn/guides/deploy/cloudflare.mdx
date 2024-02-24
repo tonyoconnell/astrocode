@@ -1,0 +1,138 @@
+---
+title: 部署你的 Astro 站点至 Cloudflare Pages
+description: 如何使用 Cloudflare Pages 将你的 Astro 网站部署到网络上。
+type: deploy
+i18nReady: true
+---
+import ReadMore from '~/components/ReadMore.astro'
+
+你可以将你的 Astro 项目部署在 [Cloudflare Pages](https://pages.cloudflare.com/) 上。Cloudflare Pages 是一个供前端开发人员协作和部署静态 (JAMstack) 或 SSR 网站的平台。
+
+本指南包含：
+
+- [如何使用 Git 部署一个站点](#如何使用-git-部署一个站点)
+- [如何使用 Wrangler 部署一个站点](#如何使用-wrangler-部署一个站点)
+- [如何部署 SSR 站点](#如何部署-ssr-站点)
+
+## 前提条件
+
+开始之前，你需要：
+
+- 一个 Cloudflare 账户。如果你暂时还没有，你可以现在免费去 Cloudflare 官网注册一个。
+- 你的源代码存储在一个 [GitHub](https://github.com/) 或者 [GitLab](https://about.gitlab.com/) 仓库里。
+
+## 如何使用 Git 部署一个站点
+
+1. 在 Cloudflare Pages 设置一个新项目。
+2. 将你的代码提交到一个 Git 仓库中 (GitHub, GitLab)。
+3. 登陆 Cloudflare Dashboard 并在 **Account Home** > **Pages** 选择你的账户。
+4. 选择 **Create a new Project**（创建一个新项目）和 **Connect Git**（连接 Git）选项。
+5. 选择你想部署的 Git 项目并点击 **Begin setup**（初始设置）。
+6. 使用以下的构建设置：
+
+    - **Framework preset（框架预设）:** `Astro`
+    - **Build command（构建命令）:** `npm run build`
+    - **Build output directory（构建输出目录）:** `dist`
+
+7. 点击 **Save and Deploy**（保存并部署）按钮。
+
+## 如何使用 Wrangler 部署一个站点
+
+1. 安装 [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/get-started/)。
+2. 使用 `wrangler login` 在 Wrangler 登陆 Cloudflare 账户并授权。
+3. 运行你的构建命令（比如 `npm run build`）。
+4. 使用 `npx wrangler pages deploy dist` 进行部署。
+
+```bash
+# 安装 Wrangler CLI（命令行）
+npm install -g wrangler
+# 在 CLI 中登陆 Cloudflare 账户
+wrangler login
+# 运行你的构建命令
+npm run build
+# 创建新的部署
+npx wrangler pages deploy dist
+```
+
+上传完所有的文件后，Wrangler 将为你提供一个预览 URL 以检查你的站点。当你登录 Cloudflare Pages 仪表板时，你将看到你的新项目。
+
+### 使用 Wrangler 在本地启用预览
+
+要使预览版正常工作，你必须安装 `wrangler`
+
+```bash
+pnpm add wrangler --save-dev
+```
+
+然后就可以将预览脚本从 Astro 的内置预览命令更新为 `wrangler` 了：
+
+```json title="package.json"
+"preview": "wrangler pages dev ./dist"
+```
+
+## 如何部署 SSR 站点
+
+你可以使用 [`@astrojs/cloudflare` 适配器](/zh-cn/guides/integrations-guide/cloudflare/)将 Astro SSR 站点部署到 Cloudflare Pages。
+
+请按照以下步骤设置适配器。完成后，你可以使用上述文档中的任何方法进行部署。
+
+### 快速安装
+
+使用以下 `astro add` 命令添加 Cloudflare 适配器以在你的 Astro 项目中启用 SSR。这将安装适配器并一步对你的文件 `astro.config.mjs` 进行适当的更改。
+
+```bash
+npx astro add cloudflare
+```
+
+### 手动安装
+
+如果你想要手动安装适配器，请完成以下两个步骤：
+
+1. 使用你喜欢的包管理器将 `@astrojs/cloudflare` 添加到项目的依赖项中。如果你正在使用 npm 或不确定是哪个包管理器，请在终端中运行：
+
+    ```bash
+    npm install @astrojs/cloudflare
+    ```
+
+2. 将以下内容添加到你的 `astro.config.mjs` 文件中：
+
+    ```js title="astro.config.mjs" ins={2, 5-6}
+    import { defineConfig } from 'astro/config';
+    import cloudflare from '@astrojs/cloudflare';
+
+    export default defineConfig({
+      output: 'server',
+      adapter: cloudflare()
+    });
+    ```
+
+### 模式
+
+现在使用 [`@astrojs/cloudflare`](https://github.com/withastro/astro/tree/main/packages/integrations/cloudflare#readme) 适配器部署到 Pages Functions 时有两种模式。
+
+1. **advanced**（高级）模式：在此模式下，Astro 会在 `dist` 目录下生成一个 `_worker.js` 文件。或者自动变为一个 `directory`（目录）模式，页面将从项目根目录中的函数文件夹中编译代码。
+
+    > 如果没有设置任何模式，默认模式是 `"advanced"`。
+
+2. **directory**（目录）模式：目录模式意味着适配器将以相同的方式编译你的应用程序的客户端部分，但它将 worker 脚本移动到项目根目录中的 `functions` 文件夹中。适配器只会在该文件夹中生成一个 `[[path]].js` 文件，以允许你添加其他插件和中间件，这些中间件可以被检查到版本控制中。
+
+    ```ts title="astro.config.mjs" "directory"
+    export default defineConfig({
+      adapter: cloudflare({ mode: "directory" }),
+    });
+    ```
+### 使用 Pages Functions
+
+[Pages Functions](https://developers.cloudflare.com/pages/platform/functions/)使你能够运行服务器端代码以启用动态功能，而无需运行专用服务器。
+
+首先，在你项目的根目录下创建一个 `/functions` 目录。在此目录中编写的 Functions 文件会自动在预先指定的目录上生成具有自定义功能的 Worker。要了解有关编写函数的更多信息，请参阅 [Pages Functions 文档](https://developers.cloudflare.com/pages/platform/functions/)。
+
+<ReadMore>阅读更多关于 [Astro 中的 SSR（服务端渲染）](/zh-cn/guides/server-side-rendering/) 的信息。</ReadMore>
+
+## 故障排除
+
+如果你遇到错误，请仔细检查你在本地使用的 `node` 版本 (使用命令 `node -v`) 是否与你在 Pages 环境变量中指定的版本相匹配。
+
+Cloudflare 需要 [node `v16.13`](https://miniflare.dev/get-started/cli#installation)，这是一个比 Astro 开箱即用的最低版本更新的版本，因此请仔细检查你是否使用了至少 `v16.13`。
+
+由于 Cloudflare 的 Auto Minify（自动压缩）功能，客户端 Hydration 可能会失败。如果你在控制台中看到 `Hydration completed but contains mismatches`，请确保在 Cloudflare 设置中禁用 Auto Minify。
